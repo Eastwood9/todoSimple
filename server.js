@@ -7,6 +7,7 @@ console.log(process.env)
 
 //TODO:
 //UPDATE, DELETE запросы и залить в cyclic. На этом всё
+//create, read, update, delete
 
 let db,
     dbConnectionStr = process.env.DB_STRING,
@@ -32,7 +33,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/addTodo', (req, res) => {
-  db.collection('Todos').insertOne({task: req.body.task})
+  db.collection('Todos').insertOne({task: req.body.task, completed: false})
   .then(result => {
     console.log('Task added...')
     res.redirect('/')
@@ -45,9 +46,40 @@ app.delete('/deleteTask', (req, res) => {
     console.log('Task deleted.')
     res.json('Task deleted.')
   })
-  .catch(error => console.error(error))
+  .catch(err => console.error(err))
 })
 
-app.listen(process.env.PORT || PORT, ()=>{
+app.put('/markComplete', (req, res) => {
+  db.collection('Todos').updateOne( { task: req.body.task}, {$set: {
+    completed: true
+  }}, {
+    sort: {_id: -1},
+    upsert: false
+  })
+  .then(result => {
+    console.log('Mark completed.')
+    res.json('Marked complete')
+  })
+  .catch(err => console.error(err))
+
+})
+
+app.put('/markUncomplete', (req, res) => {
+  db.collection('Todos').updateOne( { task: req.body.task}, {$set: {
+    completed: false
+  }}, {
+    sort: {_id: -1},
+    upsert: false
+  })
+  .then(result => {
+    console.log('Mark uncompleted.')
+    res.json('<arked uncompleted.')
+  })
+  .catch(err => console.error(err))
+})
+
+
+app.listen(process.env.PORT || PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
